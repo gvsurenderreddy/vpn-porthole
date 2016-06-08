@@ -55,9 +55,5 @@ class TmpFifo(object):
         self.close()
 
 
-
 def abs_path(path):
     return path
-
-
-

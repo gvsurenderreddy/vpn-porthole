@@ -1,6 +1,6 @@
 import sys
 import os
-from configobj import ConfigObj, SimpleVal, get_extra_values
+from configobj import ConfigObj, get_extra_values
 from validate import Validator
 from pkg_resources import resource_stream
 
@@ -80,11 +80,11 @@ class Settings(object):
         confobj = ConfigObj(config, configspec=spec_lines, raise_errors=True)
         result = confobj.validate(Validator())
         if result is not True:
-            #print(result)
+            # print(result)
             pass
         extra = get_extra_values(confobj)
         if extra:
-            #print(extra)
+            # print(extra)
             pass
-        #print (confobj)
+        # print (confobj)
         return confobj

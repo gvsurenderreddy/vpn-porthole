@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 from argparse import ArgumentParser
 
@@ -25,6 +26,7 @@ class ArgParseTree(object):
     ...         return 3
     ...
     >>> class Spam(ArgParseTree):
+    ...     name = 'ham'
     ...     def args(self, parser):
     ...         parser.add_argument("--eggs", default=None)
     ...
@@ -37,10 +39,21 @@ class ArgParseTree(object):
     <...>
     >>> Spam(m)  # doctest: +ELLIPSIS
     <...>
+    >>> m.main([])
+    usage: argparsetree.py [-h] [--fish] {foo,ham} ...
+    <BLANKLINE>
+    positional arguments:
+      {foo,ham}
+        foo
+        ham
+    <BLANKLINE>
+    optional arguments:
+      -h, --help  show this help message and exit
+      --fish
     >>> m.main(['foo', "BAR"])
     FOO: BAR (False)
     3
-    >>> m.main(['--fish', 'spam', '--eggs', "green"])
+    >>> m.main(['--fish', 'ham', '--eggs', "green"])
     SPAM: green (True)
     4
     """
@@ -51,39 +64,44 @@ class ArgParseTree(object):
     _parser = None
     _subparser = None
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, **kwargs):
+        self.__kwargs = kwargs
         if parent:
             self._parent = parent
-            if parent._children is None:
-                parent._children = []
+            parent._children = parent._children or []
             parent._children.append(self)
 
     def _setup_args(self):
         if self._parent is None:
             self._parser = ArgumentParser(usage=self.usage)
-            try:
-                self.args(self._parser)
-            except AttributeError:
-                pass
+        else:
+            name = self.name or self.__class__.__name__.lower()
+            help = None
+            description = None
+            if self.__doc__:
+                from textwrap import dedent
+                doc = dedent(self.__doc__.rstrip()).splitlines()
+                help = doc[0]
+                description = '\n'.join(doc[2:])
+
+            self._parser = self._parent._subparser.add_parser(name=name,
+                                                              help=help,
+                                                              description=description)
+
+        try:
+            self.args(self._parser)
+        except AttributeError:
+            pass
 
         if self._children:
             self._subparser = self._parser.add_subparsers()
-
-        if self._parent:
-            self.name = self.name or self.__class__.__name__.lower()
-            self._parser = self._parent._subparser.add_parser(self.name)
-            try:
-                self.args(self._parser)
-            except AttributeError:
-                pass
-
-        if self._children:
             for child in self._children:
                 child._setup_args()
         else:
-            run = getattr(self, 'run', None)
-            if run:
-                self._parser.set_defaults(_run=run)
+            try:
+                self._parser.set_defaults(_run=self.run)
+            except AttributeError:
+                pass
 
     def main(self, argv=None):
         self._setup_args()
@@ -92,11 +110,11 @@ class ArgParseTree(object):
             argv = sys.argv[1:]
 
         args = self._parser.parse_args(argv)
-        return args._run(args)
+        if '_run' in args:
+            return args._run(args)
+        self._parser.print_help()
 
 
 if __name__ == "__main__":
     import doctest
     doctest.testmod()
-
-

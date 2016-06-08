@@ -7,11 +7,11 @@ from VPNPorthole.system.shell import Pexpect
 
 class Docker(object):
     def __init__(self):
-        #print(self.info())
+        # print(self.info())
         pass
 
     def info(self):
-        args = ['/usr/local/bin/docker', 'images',]
+        args = ['/usr/local/bin/docker', 'images']
         p = subprocess.Popen(args, stdout=subprocess.PIPE)
         info_lines = []
         for line in p.stdout:
@@ -19,7 +19,7 @@ class Docker(object):
         return info_lines
 
     def list_images(self):
-        args = ['/usr/local/bin/docker', 'images',]
+        args = ['/usr/local/bin/docker', 'images']
         p = subprocess.Popen(args, stdout=subprocess.PIPE)
         headers = None
         images = []
@@ -57,7 +57,7 @@ class Docker(object):
             return
         args = ['/usr/local/bin/docker', 'rm']
         args.extend(containers)
-        p = subprocess.Popen(args, stdout=subprocess.PIPE)
+        p = popen(args, stdout=subprocess.PIPE)
         p.wait()
 
     def rmi(self, images):
@@ -65,7 +65,7 @@ class Docker(object):
             return
         args = ['/usr/local/bin/docker', 'rmi']
         args.extend(images)
-        p = subprocess.Popen(args, stdout=subprocess.PIPE)
+        p = popen(args, stdout=subprocess.PIPE)
         p.wait()
 
     def build(self, *vargs):
@@ -86,14 +86,14 @@ class Docker(object):
             return
         args = ['/usr/local/bin/docker', 'stop']
         args.extend(containers)
-        p = subprocess.Popen(args, stdout=subprocess.PIPE)
+        p = popen(args, stdout=subprocess.PIPE)
         p.wait()
 
     def shell(self, container):
         if not container:
             return
         args = ['/usr/local/bin/docker', 'exec', '-it', container, '/bin/bash']
-        p = subprocess.Popen(args)
+        p = popen(args)
         p.wait()
 
     def inspect(self, container, values):
@@ -102,7 +102,7 @@ class Docker(object):
         format = '{{.%s}}' % '}}:{{.'.join(values)
 
         args = ['/usr/local/bin/docker', 'inspect', '--format', format, container]
-        p = subprocess.Popen(args, stdout=subprocess.PIPE)
+        p = popen(args, stdout=subprocess.PIPE)
         table = []
         for line in p.stdout:
             line = line.decode('utf-8').rstrip()

@@ -1,7 +1,7 @@
 import os
 from pkg_resources import resource_stream
 
-from VPNPorthole.system import TmpDir, Docker, docker_host
+from VPNPorthole.system import TmpDir, Docker, docker_host, route_add, route_del, resolver_add, resolver_del
 
 
 Dockerfile_tmpl = resource_stream("VPNPorthole", "resources/Dockerfile.tmpl").read().decode("utf-8")
@@ -11,6 +11,7 @@ post_connect_sh_tmpl = resource_stream("VPNPorthole", "resources/post_connect.sh
 
 class Image(object):
     __container = None
+    __dnsmasq_port = 53
 
     def __init__(self, settings):
         self.__settings = settings
@@ -63,7 +64,6 @@ class Image(object):
                 os.chmod(script, 0o744)
                 os.utime(script, (0, 0))
 
-            add_script(vpn_script_tmpl, 'vpn')
             add_script(connect_sh_tmpl, 'connect')
             add_script(post_connect_sh_tmpl, 'post_connect')
 
@@ -74,7 +74,7 @@ class Image(object):
 
         if self.status():
             print("Already running")
-            return 1
+            return 3
 
         if not self._images():
             self.build()
@@ -86,12 +86,10 @@ class Image(object):
         if tag:
             pass
 
-        dnsmasqport = 53
-
-        args = ['--rm', '-it', #'--name', tag,
+        args = ['--rm', '-it',  # '--name', tag,
                 '--privileged']
         if docker_host():
-            args.extend(['-p', '%d:53' % dnsmasqport])
+            args.extend(['-p', '%d:53' % self.__dnsmasq_port])
         args.extend([image,
                     '/home/%(user)s/connect' % ctx, self.__settings.vpn])
 
@@ -109,7 +107,7 @@ class Image(object):
                         print(" <password was same as previous attempt> ")
                         p.send(chr(3))
                         p.wait()
-                        return 1
+                        return 3
                     old_pwd = pwd
                     p.sendline('%s' % pwd)
                 if i == 2:
@@ -121,19 +119,13 @@ class Image(object):
             p.wait()
             raise
 
-        fields = ['NetworkSettings.IPAddress']
-        info = self.__docker.inspect(self._container(), fields)
-        for k, v in info.items():
-            print("- %s: %s" % (k, v))
-
-        args = ['/home/%(user)s/post_connect' % ctx, '54']
+        args = ['/home/%(user)s/post_connect' % ctx]
         self.__docker.exec(self._container(), *args)
 
-    def add_routes(self):
-        pass
-
-    def del_routes(self):
-        pass
+        ip = self._ip()
+        print("- Container IP: %s" % ip)
+        route_add(self.__settings.subnets, ip)
+        resolver_add(ip, self.__dnsmasq_port)
 
     def status(self):
         containers = self._containers()
@@ -162,14 +154,25 @@ class Image(object):
         containers = self._containers()
         running = [k for k, v in containers.items() if v is True]
         if not running:
-            print("Not running")
             return None
         if len(running) > 1:
             print('WARNING: there are more than one containers: %s' % running)
         self.__container = running[0]
         return running[0]
 
+    def _ip(self):
+        fields = ['NetworkSettings.IPAddress']
+        info = self.__docker.inspect(self._container(), fields)
+        if info:
+            return info['NetworkSettings.IPAddress']
+
     def stop(self):
+        ip = self._ip()
+        if ip:
+            resolver_del(ip, self.__dnsmasq_port)
+
+            route_del(self.__settings.subnets)
+
         containers = self._containers()
         running = [k for k, v in containers.items() if v is True]
         self.__docker.stop(running)
@@ -177,6 +180,7 @@ class Image(object):
         containers = self._containers()
         stopped = [k for k, v in containers.items() if v is False]
         self.__docker.rm(stopped)
+
 
     def purge(self):
         self.stop()
