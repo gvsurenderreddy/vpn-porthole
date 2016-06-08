@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+vpn=$1
+
+
+ip route list > routes.lst 2> /dev/null
+sudo /usr/sbin/openconnect $vpn --interface=tun1

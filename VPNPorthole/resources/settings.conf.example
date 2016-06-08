@@ -1,0 +1,15 @@
+# This is a sample settings file for vpn-porthole, customise as you wish
+
+[proxy]
+    [[work]]
+        http_proxy = http://www-proxy.example.com:80
+
+
+[profile]
+    [[bar]]
+        username = joe
+        password = secret
+        vpn = entry@blah
+        [[[subnets]]]
+            10.11.0.0/28 = True
+            10.12.13.0/24 = True

@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+sudo iptables -t nat -A POSTROUTING -o tun1 -j MASQUERADE
+
+sudo -E /etc/init.d/dnsmasq start
