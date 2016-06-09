@@ -1,5 +1,5 @@
 import os
-from VPNPorthole.system.shell import popen
+from vpnporthole.system.shell import popen
 import subprocess
 
 

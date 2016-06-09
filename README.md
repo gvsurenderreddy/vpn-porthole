@@ -1,2 +1,3 @@
 # vpn-porthole
-Porthole into Virtual Private Networks (uses Docker)
+Splice VPN access into your default network space
+

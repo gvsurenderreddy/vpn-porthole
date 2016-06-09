@@ -1,5 +1,5 @@
 
-from VPNPorthole.system.shell import popen
+from vpnporthole.system.shell import popen
 
 def docker_host():
     return False
@@ -7,14 +7,14 @@ def docker_host():
 
 def route_add(subnets, ip):
     for subnet in subnets:
-        args = ['/usr/bin/sudo', 'ip', 'route', 'add', subnet, 'via', ip]
+        args = ['/usr/bin/sudo', '/usr/local/sbin/ip', 'route', 'add', str(subnet), 'via', ip]
         p = popen(args)
         p.wait()
 
 
 def route_del(subnets):
     for subnet in subnets:
-        args = ['/usr/bin/sudo', 'ip', 'route', 'del', str(subnet)]
+        args = ['/usr/bin/sudo', '/usr/local/sbin/ip', 'route', 'del', str(subnet)]
         p = popen(args)
         p.wait()
 

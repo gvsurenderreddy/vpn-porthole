@@ -9,7 +9,7 @@ class TmpDir(object):
 
     def __init__(self):
         dir = None
-        self.__path = tempfile.mkdtemp(prefix='VPNPorthole-', dir=dir)
+        self.__path = tempfile.mkdtemp(prefix='vpnporthole-', dir=dir)
 
     def __enter__(self):
         return self

@@ -8,8 +8,15 @@
 [profile]
     [[bar]]
         username = joe
-        password = secret
-        vpn = entry@blah
+        # password is an optional field. YOu can directly add your passord here,
+        # though that is not good security. If you leave it blank then you will be
+        # prompted when needed. And you can also configure your for password to be
+        # retrieved by a shell command, and even use a key chain:
+        #   https://joshtronic.com/2014/02/17/using-keyring-access-on-the-osx-commandline/
+        # e.g.:
+        password = SHELL:~/path/to/bar/password/script
+        vpn = 10.11.12.77
+
         [[[subnets]]]
             10.11.0.0/28 = True
             10.12.13.0/24 = True

@@ -1,16 +1,15 @@
 import os
 from pkg_resources import resource_stream
 
-from VPNPorthole.system import TmpDir, Docker, docker_host, route_add, route_del, resolver_add, resolver_del
+from vpnporthole.system import TmpDir, Docker, docker_host, route_add, route_del, resolver_add, resolver_del
 
 
-Dockerfile_tmpl = resource_stream("VPNPorthole", "resources/Dockerfile.tmpl").read().decode("utf-8")
-connect_sh_tmpl = resource_stream("VPNPorthole", "resources/connect.sh.tmpl").read().decode("utf-8")
-post_connect_sh_tmpl = resource_stream("VPNPorthole", "resources/post_connect.sh.tmpl").read().decode("utf-8")
+Dockerfile_tmpl = resource_stream("vpnporthole", "resources/Dockerfile.tmpl").read().decode("utf-8")
+connect_sh_tmpl = resource_stream("vpnporthole", "resources/connect.sh.tmpl").read().decode("utf-8")
+post_connect_sh_tmpl = resource_stream("vpnporthole", "resources/post_connect.sh.tmpl").read().decode("utf-8")
 
 
 class Image(object):
-    __container = None
     __dnsmasq_port = 53
 
     def __init__(self, settings):
@@ -114,7 +113,7 @@ class Image(object):
                     break
                 if i == 3:
                     pass
-        except KeyboardInterrupt:
+        except (Exception, KeyboardInterrupt):
             p.send(chr(3))
             p.wait()
             raise
@@ -149,15 +148,12 @@ class Image(object):
         return containers
 
     def _container(self):
-        if self.__container:
-            return self.__container
         containers = self._containers()
         running = [k for k, v in containers.items() if v is True]
         if not running:
             return None
         if len(running) > 1:
             print('WARNING: there are more than one containers: %s' % running)
-        self.__container = running[0]
         return running[0]
 
     def _ip(self):
@@ -194,3 +190,5 @@ class Image(object):
         fields = ['NetworkSettings.IPAddress']
         info = self.__docker.inspect(self._container(), fields)
         print(info)
+
+from docker import Client as DockerClient

@@ -4,7 +4,7 @@ from configobj import ConfigObj, get_extra_values
 from validate import Validator
 from pkg_resources import resource_stream
 
-from VPNPorthole.ip import IPv4Subnet
+from vpnporthole.ip import IPv4Subnet
 
 
 class Settings(object):
@@ -39,7 +39,7 @@ class Settings(object):
 
     @property
     def username(self):
-        return self.__profile['username']
+        return self.__extract(self.__profile['username'])
 
     @property
     def password(self):
@@ -47,7 +47,13 @@ class Settings(object):
         if not pwd:
             import getpass
             pwd = getpass.getpass('')
-        return pwd
+        return self.__extract(pwd)
+
+    def __extract(self, value):
+        if value and value.startswith('SHELL:'):
+            import subprocess
+            value = subprocess.check_output(value[6:], shell=True).decode('utf-8').rstrip()
+        return value
 
     @property
     def vpn(self):
@@ -65,7 +71,7 @@ class Settings(object):
 
     @classmethod
     def __default_settings_content(cls):
-        return resource_stream("VPNPorthole", "resources/settings.conf.example").read()
+        return resource_stream("vpnporthole", "resources/settings.conf.example").read()
 
     @classmethod
     def list_profiles(cls, config):
@@ -75,7 +81,7 @@ class Settings(object):
 
     @classmethod
     def __get_confobj(cls, config):
-        spec_lines = resource_stream("VPNPorthole", "resources/settings.spec").readlines()
+        spec_lines = resource_stream("vpnporthole", "resources/settings.spec").readlines()
 
         confobj = ConfigObj(config, configspec=spec_lines, raise_errors=True)
         result = confobj.validate(Validator())

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-from VPNPorthole.docker import Image
-from VPNPorthole.settings import Settings
-from VPNPorthole.argparsetree import ArgParseTree
+from vpnporthole.image import Image
+from vpnporthole.settings import Settings
+from vpnporthole.argparsetree import ArgParseTree
 
 
 class Main(ArgParseTree):

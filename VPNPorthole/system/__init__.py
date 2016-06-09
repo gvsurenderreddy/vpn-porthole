@@ -1,14 +1,14 @@
 import platform
 
-from VPNPorthole.system.docker import Docker
-from VPNPorthole.system.shell import popen, Pexpect
-from VPNPorthole.system.path import TmpDir, TmpFifo, abs_path
+from vpnporthole.system.docker import Docker
+from vpnporthole.system.shell import popen, Pexpect
+from vpnporthole.system.path import TmpDir, TmpFifo, abs_path
 
 
 if platform.system() == 'Darwin':
-    from VPNPorthole.system.darwin import route_add, route_del, docker_host, resolver_add, resolver_del
-elif platform.system() == 'debian':
-    from VPNPorthole.system.debian import route_add, route_del, docker_host, resolver_add, resolver_del
+    from vpnporthole.system.darwin import route_add, route_del, docker_host, resolver_add, resolver_del
+elif platform.system() == 'Linux':
+    from vpnporthole.system.debian import route_add, route_del, docker_host, resolver_add, resolver_del
 else:
     raise NotImplementedError(platform.system())
 

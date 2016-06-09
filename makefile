@@ -1,5 +1,13 @@
 develop:
-	./setup.sh
+	#./setup.sh
+	python3 -m venv virtualenv --without-pip
+	{ \
+		set -e; \
+		source ./virtualenv/bin/activate; \
+		wget -c -N https://bootstrap.pypa.io/get-pip.py -P virtualenv/bin/; \
+		python3 ./virtualenv/bin/get-pip.py; \
+		pip3 install pep8 pyflakes pylint nose coverage radon; \
+	}
 
 
 test:
@@ -7,7 +15,7 @@ test:
 
 
 coverage:
-	coverage run tests/test_types.py
+	coverage run tests/test_*.py
 	coverage html
 	open htmlcov/index.html
 
@@ -19,14 +27,14 @@ clean:
 
 
 analyse:
-	find VPNPorthole -name '*.py' | xargs pep8 --ignore E501
-	find VPNPorthole -name '*.py' | xargs pyflakes
-	find VPNPorthole -name '*.py' | xargs pylint -d invalid-name -d locally-disabled -d missing-docstring -d too-few-public-methods -d protected-access
+	find vpnporthole -name '*.py' | xargs pep8 --ignore E501
+	find vpnporthole -name '*.py' | xargs pyflakes
+	find vpnporthole -name '*.py' | xargs pylint -d invalid-name -d locally-disabled -d missing-docstring -d too-few-public-methods -d protected-access
 
 
 metrics:
-	find VPNPorthole -name '*.py' | xargs radon cc -s -a -nb
-	find VPNPorthole -name '*.py' | xargs radon mi -s
+	find vpnporthole -name '*.py' | xargs radon cc -s -a -nb
+	find vpnporthole -name '*.py' | xargs radon mi -s
 
 
 to_pypi_test:

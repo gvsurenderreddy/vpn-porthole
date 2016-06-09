@@ -1,9 +1,10 @@
 import sys
 import subprocess
 
-from VPNPorthole.system.shell import popen
-from VPNPorthole.system.shell import Pexpect
+from vpnporthole.system.shell import popen
+from vpnporthole.system.shell import Pexpect
 
+docker_bin = subprocess.check_output('which docker', shell=True).decode('utf-8').rstrip()
 
 class Docker(object):
     def __init__(self):
@@ -11,7 +12,7 @@ class Docker(object):
         pass
 
     def info(self):
-        args = ['/usr/local/bin/docker', 'images']
+        args = [docker_bin, 'images']
         p = subprocess.Popen(args, stdout=subprocess.PIPE)
         info_lines = []
         for line in p.stdout:
@@ -19,7 +20,7 @@ class Docker(object):
         return info_lines
 
     def list_images(self):
-        args = ['/usr/local/bin/docker', 'images']
+        args = [docker_bin, 'images']
         p = subprocess.Popen(args, stdout=subprocess.PIPE)
         headers = None
         images = []
@@ -38,7 +39,7 @@ class Docker(object):
     def list_containers(self):
         headers = ['ID', 'Image', 'Status']
         format = '{{.%s}}' % '}}:{{.'.join(headers)
-        args = ['/usr/local/bin/docker', 'ps', '--all', '--format', format]
+        args = [docker_bin, 'ps', '--all', '--format', format]
         p = subprocess.Popen(args, stdout=subprocess.PIPE)
         table = []
         for line in p.stdout:
@@ -55,7 +56,7 @@ class Docker(object):
     def rm(self, containers):
         if not containers:
             return
-        args = ['/usr/local/bin/docker', 'rm']
+        args = [docker_bin, 'rm']
         args.extend(containers)
         p = popen(args, stdout=subprocess.PIPE)
         p.wait()
@@ -63,13 +64,13 @@ class Docker(object):
     def rmi(self, images):
         if not images:
             return
-        args = ['/usr/local/bin/docker', 'rmi']
+        args = [docker_bin, 'rmi']
         args.extend(images)
         p = popen(args, stdout=subprocess.PIPE)
         p.wait()
 
     def build(self, *vargs):
-        args = ['/usr/local/bin/docker', 'build']
+        args = [docker_bin, 'build']
         args.extend(vargs)
         p = popen(args, stdout=subprocess.PIPE)
         for line in p.stdout:
@@ -84,7 +85,7 @@ class Docker(object):
     def stop(self, containers):
         if not containers:
             return
-        args = ['/usr/local/bin/docker', 'stop']
+        args = [docker_bin, 'stop']
         args.extend(containers)
         p = popen(args, stdout=subprocess.PIPE)
         p.wait()
@@ -92,7 +93,7 @@ class Docker(object):
     def shell(self, container):
         if not container:
             return
-        args = ['/usr/local/bin/docker', 'exec', '-it', container, '/bin/bash']
+        args = [docker_bin, 'exec', '-it', container, '/bin/bash']
         p = popen(args)
         p.wait()
 
@@ -101,7 +102,7 @@ class Docker(object):
             return
         format = '{{.%s}}' % '}}:{{.'.join(values)
 
-        args = ['/usr/local/bin/docker', 'inspect', '--format', format, container]
+        args = [docker_bin, 'inspect', '--format', format, container]
         p = popen(args, stdout=subprocess.PIPE)
         table = []
         for line in p.stdout:
@@ -113,7 +114,7 @@ class Docker(object):
         return table[0]
 
     def run_with_pexpect(self, *vargs):
-        args = ['/usr/local/bin/docker', 'run']
+        args = [docker_bin, 'run']
         args.extend(vargs)
 
         pe = Pexpect(args)
@@ -121,7 +122,7 @@ class Docker(object):
         return pe
 
     def exec(self, container, *vargs):
-        args = ['/usr/local/bin/docker', 'exec', '-it', container]
+        args = [docker_bin, 'exec', '-it', container]
         args.extend(vargs)
         p = popen(args)
         p.wait()
